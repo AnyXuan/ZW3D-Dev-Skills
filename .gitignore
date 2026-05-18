@@ -1,0 +1,26 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+
+# Build outputs
+x64/
+build/
+*.dll
+*.exe
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.tlog
+*.lastbuildstate
+
+# Temporary
+*.tmp
+*.log
