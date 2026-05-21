@@ -3,7 +3,7 @@ name: zw3d-cae-structural
 description: Use when implementing or debugging ZW3D 2026 structural CAE workflows, including static analysis, modal analysis, buckling, force loads, constraints, contacts, stress/strain/displacement results, and structural task setup through the bridge.
 ---
 
-# ZW3D 结构分析 Skill — v1.2.0
+# ZW3D 结构分析 Skill — v1.3.0
 
 > **触发词**: "结构分析", "静力学", "模态分析", "屈曲分析", "力载荷", "约束", "接触", "structural", "static analysis", "modal", "buckling", "应力", "位移"
 > **适用**: ZW3D 2026 ZWMeshWorks 静力/模态/屈曲分析
@@ -52,16 +52,19 @@ if (err != ZWSIM_API_NO_ERROR) {
 
 ## 三、载荷类型
 
-### 3.1 力载荷 (cmd=236)
+### 3.1 力载荷 (cmd=236) 📐 设计草案
+> ⚠️ cmd=236 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
+
 ```cpp
 szwsForceLoadData forceData;
 czwsSimStForceLoadDataInit(&forceData);
 forceData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
 forceData.iEntNum = 1;
 forceData.sEntities = &entityId;
-forceData.dX = 100.0;  // N
-forceData.dY = 0.0;
-forceData.dZ = 0.0;
+forceData.dValue = 100.0;         // 力的大小 (N)
+forceData.dDirection[0] = 1.0;    // X方向分量
+forceData.dDirection[1] = 0.0;    // Y方向分量
+forceData.dDirection[2] = 0.0;    // Z方向分量
 
 zwsDbId idxLoad;
 int err = czwsSimStCreateForceLoad(&forceData, &idxLoad);
@@ -72,7 +75,8 @@ if (err != ZWSIM_API_NO_ERROR) {
 }
 ```
 
-### 3.2 力矩载荷 (cmd=237)
+### 3.2 力矩载荷 (cmd=237) 📐 设计草案
+> ⚠️ cmd=237 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
 ```cpp
 szwsMomentLoadData momentData;
 czwsSimStMomentLoadDataInit(&momentData);
@@ -89,7 +93,8 @@ czwsSimStFreeMomentLoadData(&momentData);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
-### 3.3 线载荷/分布力 (cmd=238)
+### 3.3 线载荷/分布力 (cmd=238) 📐 设计草案
+> ⚠️ cmd=238 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
 ```cpp
 szwsLineLoadData lineData;
 czwsSimStLineLoadDataInit(&lineData);
@@ -123,10 +128,12 @@ if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 
 ## 四、约束类型
 
-### 4.1 固定约束 (cmd=243)
+### 4.1 固定约束 (cmd=243) 📐 设计草案
+> ⚠️ cmd=243 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
+
 ```cpp
-szwsFixedGeometryConstraintData fixData;
-czwsSimStFixedGeometryConstraintDataInit(&fixData);
+szwsFixedGeometryData fixData;
+czwsSimStFixedGeometryDataInit(&fixData);
 fixData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
 fixData.iEntNum = 1;
 fixData.sEntities = &entityId;
@@ -140,7 +147,8 @@ if (err != ZWSIM_API_NO_ERROR) {
 }
 ```
 
-### 4.2 铰支约束 (cmd=244)
+### 4.2 铰支约束 (cmd=244) 📐 设计草案
+> ⚠️ cmd=244 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
 ```cpp
 szwsFixedHingeConstraintData hingeData;
 czwsSimStFixedHingeConstraintDataInit(&hingeData);
@@ -157,7 +165,8 @@ czwsSimStFreeFixedHingeConstraintData(&hingeData);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
-### 4.3 弹性支撑 (cmd=245)
+### 4.3 弹性支撑 (cmd=245) 📐 设计草案
+> ⚠️ cmd=245 未在 `Common/define.h` 中注册，以下API签名基于 CaeApiWrapper.h 推断，待实现后验证。
 ```cpp
 szwsElasticSupportConstraintData elasticData;
 czwsSimStElasticSupportConstraintDataInit(&elasticData);
@@ -222,19 +231,19 @@ Step 13 查询结果     czwsResultTypeInqData
 ```
 
 ### IPC命令对应 (完整表见 [[zw3d-ipc-comm#七完整命令码表\|ipc-comm §七]])
-| 步骤 | cmd | 方法 |
-|------|-----|------|
-| 创建任务 | 200 | `CreateTask` |
-| 选择实体 | 220/221/224 | `SelectEntities` |
-| 力载荷 | 236 | `SetForceLoad` |
-| 力矩载荷 | 237 | `SetMomentLoad` |
-| 线载荷 | 238 | `SetLineLoad` |
-| 固定约束 | 243 | `SetFixedConstraint` |
-| 铰支约束 | 244 | `SetHingeConstraint` |
-| 弹性支撑 | 245 | `SetElasticSupport` |
-| 网格划分 | 250 | `Mesh3D` |
-| 求解 | 260 | `SolverRun` |
-| 查询结果 | 261 | `QueryResults` |
+| 步骤 | cmd | 方法 | 状态 |
+|------|-----|------|------|
+| 创建任务 | 200 | `CreateTask` | |
+| 选择实体 | 220/221/224 | `SelectEntities` | |
+| 力载荷 | 236 | `SetForceLoad` | 📐 设计草案 |
+| 力矩载荷 | 237 | `SetMomentLoad` | 📐 设计草案 |
+| 线载荷 | 238 | `SetLineLoad` | 📐 设计草案 |
+| 固定约束 | 243 | `SetFixedConstraint` | 📐 设计草案 |
+| 铰支约束 | 244 | `SetHingeConstraint` | 📐 设计草案 |
+| 弹性支撑 | 245 | `SetElasticSupport` | 📐 设计草案 |
+| 网格划分 | 250 | `Mesh3D` | |
+| 求解 | 260 | `SolverRun` | |
+| 查询结果 | 261 | `QueryResults` | |
 
 ---
 
@@ -334,7 +343,24 @@ Step 10 查询屈曲振型  czwsResultTypeInqData("Buckle Mode")
 
 ---
 
-## 十二、资源
+## 十二、热-结构耦合
+
+> 热-结构耦合将热仿真温度场结果导入结构分析作为温度载荷。完整工作流和API详见 [[zw3d-cae-thermal#七b热-结构耦合工作流|thermal §七B]]。
+
+**快速流程**:
+1. 完成热分析 (稳态热/瞬态热) → 求解
+2. cmd=295: 复制热任务并转换为结构任务 (`czwsPartDuplicateTask` → `czwsSimStSwitchTask`)
+3. cmd=296: 导入热效应 (`czwsSimStCreateThermalEffects`)
+4. 设置结构载荷/约束 → 网格 → 求解 → 查询结果
+
+| cmd | 功能 | 关键API |
+|-----|------|---------|
+| 295 | 复制并转换任务 | `czwsPartDuplicateTask`, `czwsSimStSwitchTask` |
+| 296 | 导入热效应 | `czwsSimStThermalEffectsInit`, `czwsSimStCreateThermalEffects` |
+
+---
+
+## 十三、资源
 
 | 资源 | 路径 |
 |------|------|
@@ -342,3 +368,7 @@ Step 10 查询屈曲振型  czwsResultTypeInqData("Buckle Mode")
 | CAE功能清单 | [[知识库/02_CAE开发/ZWMeshWorks_CAE_插件_功能清单\|功能清单.md]] |
 | 工程经验 | [[知识库/02_CAE开发/工程经验_结构化\|工程经验_结构化.md]] |
 | 代码架构 | [[知识库/02_CAE开发/代码架构\|代码架构.md]] |
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*

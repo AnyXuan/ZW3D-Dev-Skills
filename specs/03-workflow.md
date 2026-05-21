@@ -13,7 +13,8 @@ Step 1: 需求澄清
         - 实体来源 (用户选择/规则解析/全部)
 
 Step 2: 号段确认
-        → 查 commands/commands_registry.md §2 确认 cmd 号段是否冲突
+        → 查 Common/define.h TaskType 枚举确认 cmd 号段是否冲突
+        → 完整命令码表见 zw3d-ipc-comm SKILL.md §七
         → 如果冲突，协商调整
 
 Step 3: 选择模板
@@ -106,4 +107,4 @@ Step 5: 报告结论
 
 ---
 
-*文档版本: v1.2.0 | 维护者: 韩天尊*
+*文档版本: v1.3.0 | 维护者: 韩天尊*

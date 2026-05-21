@@ -72,4 +72,17 @@ return 0;
 
 ---
 
-*文档版本: v1.2.0 | 维护者: 韩天尊*
+## 五、CaeApiWrapper.h 统一封装
+
+项目使用 `Zw3dPMBridge/CaeApiWrapper.h` 作为所有 CAE API 的统一封装层。新增 CAE 功能时，优先使用 Wrapper 中的 inline 函数而非直接调用底层 `czws*` API。
+
+**设计原则**:
+- Wrapper 内联函数自动处理 Init → 设置字段 → Create → Free 的完整生命周期
+- 统一错误检查和日志输出格式
+- 结构体字段命名遵循 `eEntityType / iEntNum / sEntities / dValue` 等匈牙利变体
+
+**参考**: `Zw3dPMBridge/CaeApiWrapper.h` (656行), 各 `Cae*Ops.cpp` 实现文件
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*

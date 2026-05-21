@@ -3,7 +3,7 @@ name: zw3d-cae-mesh
 description: Use when implementing or debugging ZW3D 2026 geometry cleanup and meshing workflows, including face/edge/body filtering, hole and fillet cleanup, mid-surface extraction, mesh sizing, mesh generation, mesh quality checks, and CAE mesh preparation.
 ---
 
-# ZW3D 几何清理与网格 Skill — v1.2.0
+# ZW3D 几何清理与网格 Skill — v1.3.0
 
 > **触发词**: "几何清理", "网格划分", "mesh", "geometry cleanup", "删除小面", "移除圆角", "中面抽取", "网格尺寸", "网格质量"
 > **适用**: ZW3D 2026 ZWMeshWorks 几何清理、简化、网格划分
@@ -67,9 +67,20 @@ description: Use when implementing or debugging ZW3D 2026 geometry cleanup and m
 
 ### 3.1 网格划分API
 ```cpp
-// 3D网格划分
-int err = czwsMeshing3D(globalSize, minSize, order);
-if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
+// 3D网格划分 — 推荐: 原生命令通道 (成功率更高)
+// 参见 §六 K-020 fallback 模式
+cvxNewCommand();
+cvxCmdSend("!ZwCeMeshing");
+cvxCmdSend(nullptr);
+cvxEchoDraw();
+
+// 3D网格划分 — API方式 (部分环境可能返回 error -32)
+szwsMeshParamData meshData;
+meshData.globalSize = 5.0;
+meshData.minSize = 1.0;
+meshData.order = 1;  // 1=一阶, 2=二阶
+int err = czwsMeshing3D(count, entities, &meshData);
+if (err != ZWSIM_API_NO_ERROR) { /* 处理错误, 参见 §六 K-020 */ }
 
 // 2D网格划分
 int err = czwsMeshing2D(globalSize, minSize, order);
@@ -158,7 +169,8 @@ Step 4  几何简化 (可选)
 Step 5  分配材料
         czwsSimGeomSetMaterial
 Step 6  网格划分
-        czwsMeshing3D(globalSize, minSize, order)
+        推荐: cvxCmdSend("!ZwCeMeshing") (原生命令, 参见 §六 K-020)
+        备选: czwsMeshing3D(count, entities, &meshData)
 Step 7  网格质量检查
         czwsMeshQuality / czwsMeshFlawCheck
 Step 8  进入仿真设置 (载荷/约束/求解)
@@ -179,8 +191,11 @@ Step 8  进入仿真设置 (载荷/约束/求解)
 // 1. 先调用官方API
 int err = czwsTaskMesh3D(taskId, globalSize, minSize, order);
 if (err != ZWSIM_API_NO_ERROR) {
-    // 2. Fallback到原生命令
-    cvxCmdSend("ZwCeMeshing");
+    // 2. Fallback到原生命令 (必须使用感叹号前缀 + NewCommand序列)
+    cvxNewCommand();
+    cvxCmdSend("!ZwCeMeshing");
+    cvxCmdSend(nullptr);
+    cvxEchoDraw();
     // 3. 校验网格数量确认成功
     int meshCount = 0;
     czwsTaskInqMeshes(taskId, &meshCount, NULL);
@@ -200,9 +215,9 @@ if (err != ZWSIM_API_NO_ERROR) {
 |-----|------|------|
 | 250 | CAE_MESH_3D | 3D网格划分 |
 | 251 | CAE_MESH_QUALITY | 网格质量检查 |
-| 252 | CAE_MESH_2D | 2D网格划分 |
-| 253 | CAE_MESH_1D | 1D网格划分 |
-| 320-399 | 几何清理 | 预留80个空位 |
+| 252 | CAE_MESH_FIX | 网格修复 |
+| 253 | CAE_MESH_MERGE_NODES | 合并重合节点 |
+| 270 | CAE_MESH_ADAPTIVE | 自适应网格 |
 
 ---
 
@@ -213,3 +228,7 @@ if (err != ZWSIM_API_NO_ERROR) {
 | CAE功能清单 | [[知识库/02_CAE开发/ZWMeshWorks_CAE_插件_功能清单\|功能清单.md]] |
 | 稳态热开发计划 | [[知识库/02_CAE开发/稳态传热模块开发计划\|稳态传热模块开发计划.md]] |
 | 工程经验 | [[知识库/02_CAE开发/工程经验_结构化\|工程经验_结构化.md]] |
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*

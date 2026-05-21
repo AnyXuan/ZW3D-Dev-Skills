@@ -3,7 +3,7 @@ name: zw3d-ipc-comm
 description: Use when working on ZW3D Qt EXE to ZW3D DLL communication, Named Pipe IPC, JSON command protocols, cacheId/entity handle handoff, PostMessage worker dispatch, target resolution, or frontend-to-bridge command routing.
 ---
 
-# ZW3D 双进程通信 Skill — v1.2.0
+# ZW3D 双进程通信 Skill — v1.3.0
 
 > **触发词**: "IPC", "Named Pipe", "双进程", "Qt EXE", "JSON协议", "实体解析", "cacheId", "通信", "ipc communication", "消息分发", "PostMessage"
 > **适用**: ZW3D 2026 Qt EXE ↔ ZW3D DLL 双进程通信架构
@@ -215,59 +215,177 @@ g_entityCache.erase(cacheId);
 ## 七、完整命令码表 (唯一真相源)
 
 > 各domain skill中的号段表只列出本域条目，此处为完整表。新增命令必须在此登记。
+> 命令ID来源: `Common/define.h` TaskType 枚举。
+> 标注 `📐 设计草案` 的条目尚未在 `define.h` 中注册，仅作为设计参考。
 
-| cmd | 功能 | CaeHandle方法 | 号段 |
-|-----|------|--------------|------|
-| 101 | 打开文件 | `OpenFile` | 参数化建模 |
-| 102 | 查询参数 | `GetParameters` | 参数化建模 |
-| 103 | 参数化建模 | `ModelOnce` | 参数化建模 |
-| 104 | 保存 | `SaveFile` | 参数化建模 |
-| 105 | 批量建模 | `BatchModel` | 参数化建模 |
-| 200 | 创建仿真任务 | `CreateTask` | CAE任务管理 |
-| 201 | 删除任务 | `DeleteTask` | CAE任务管理 |
-| 202 | 查询任务列表 | `QueryTasks` | CAE任务管理 |
-| 220 | 选择实体 | `SelectEntities` | CAE实体选择 |
-| 230 | 设置温度载荷 | `SetTempLoad` | CAE载荷 |
-| 231 | 设置热通量 | `SetHeatFlux` | CAE载荷 |
-| 232 | 设置热功率 | `SetHeatPower` | CAE载荷 |
-| 233 | 设置初始温度 | `SetInitialTemp` | CAE载荷 |
-| 236 | 设置力载荷 | `SetForceLoad` | CAE载荷 |
-| 237 | 设置力矩载荷 | `SetMomentLoad` | CAE载荷 |
-| 238 | 设置线载荷 | `SetLineLoad` | CAE载荷 |
-| 240 | 热传导接触 | `SetContact` | CAE约束/接触 |
-| 241 | 绑定接触 | `SetBondedContact` | CAE约束/接触 |
-| 243 | 固定约束 | `SetFixedConstraint` | CAE约束/接触 |
-| 244 | 铰支约束 | `SetHingeConstraint` | CAE约束/接触 |
-| 245 | 弹性支撑 | `SetElasticSupport` | CAE约束/接触 |
-| 250 | 3D网格划分 | `Mesh3D` | CAE网格 |
-| 251 | 网格质量检查 | `MeshQuality` | CAE网格 |
-| 260 | 求解 | `SolverRun` | CAE求解 |
-| 261 | 查询结果 | `QueryResults` | CAE求解 |
-| 262 | 查询结果类型 | `QueryResultTypes` | CAE求解 |
-| 280 | 原生命令 | `RunNativeCmd` | CAE材料/原生 |
-| 281 | 查询仿真几何 | `QuerySimGeoms` | CAE材料/原生 |
-| 282 | 查询材料 | `QueryMaterial` | CAE材料/原生 |
-| 283 | 分配默认材料 | `AssignDefaultMaterial` | CAE材料/原生 |
-| 300 | 查询变量列表 | `QueryVariables` | 参数化建模 |
-| 301 | 批量设置变量并重建 | `SetVariablesAndRegen` | 参数化建模 |
-| 302 | 查询变量状态 | `QueryVariableStatus` | 参数化建模 |
-| 310 | 查询可解析目标 | `QueryTargets` | 目标解析 |
-| 311 | 按规则解析目标 | `ResolveTarget` | 目标解析 |
-| 313 | 校验目标规则 | `ValidateRule` | 目标解析 |
-| 400 | 定义设计变量 | `OptDefineVariable` | 参数优化 |
-| 401 | 定义优化目标 | `OptDefineObjective` | 参数优化 |
-| 402 | 定义约束条件 | `OptDefineConstraint` | 参数优化 |
-| 403 | 设置优化算法 | `OptSetAlgorithm` | 参数优化 |
-| 404 | 执行优化 | `OptRun` | 参数优化 |
-| 405 | 查询优化结果 | `OptQueryResult` | 参数优化 |
-| 406 | 查询优化历史 | `OptQueryHistory` | 参数优化 |
-| 500 | 云图PNG导出 | `ExportContourPNG` | 结果处理 |
-| 501 | CSV数据导出 | `ExportResultCSV` | 结果处理 |
-| 502 | 曲线导出 | `ExportResultCurve` | 结果处理 |
-| 503 | 报告生成 | `GenerateReport` | 结果处理 |
-| 504 | 结果查询 | `QueryResultData` | 结果处理 |
-| 505 | 动画导出 | `ExportAnimation` | 结果处理 |
-| 506 | 多工况查询 | `QueryMultiCase` | 结果处理 |
+### 参数化建模 (100-199)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 101 | `TASK_OPEN_FILE` | 打开文件 | `OpenFile` |
+| 102 | `TASK_MODEL_PARAMS` | 查询参数 | `GetParameters` |
+| 103 | `TASK_MODEL_ONCE` | 参数化建模 | `ModelOnce` |
+| 104 | `TASK_MODEL_SAVE` | 保存 | `SaveFile` |
+| 105 | `TASK_BATCH_MODEL` | 批量建模 | `BatchModel` |
+| 106 | `TASK_BATCH_MODEL_END` | 批量建模结束 | `BatchModelEnd` |
+
+### CAE 任务管理 (200-209)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 200 | `CAE_CREATE_TASK` | 创建仿真任务 | `CreateTask` |
+| 201 | `CAE_DELETE_TASK` | 删除任务 | `DeleteTask` |
+| 202 | `CAE_QUERY_TASKS` | 查询任务列表 | `QueryTasks` |
+| 203 | `CAE_QUERY_ACTIVE_TASK` | 查询当前激活任务 | `QueryActiveTask` |
+
+### CAE 仿真几何与网格查询 (210-219)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 210 | `CAE_QUERY_SIMGEOMS` | 查询仿真几何体 | `QuerySimGeoms` |
+| 211 | `CAE_QUERY_MESHES` | 查询网格列表 | `QueryMeshes` |
+| 212 | `CAE_QUERY_ACTIVE_MESH` | 查询当前激活网格 | `QueryActiveMesh` |
+
+### CAE 实体选择 (220-225)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 220 | `CAE_SELECT_ENTITIES` | 选择通用实体 | `SelectEntities` |
+| 221 | `CAE_SELECT_FACES` | 选择面 | `SelectFaces` |
+| 222 | `CAE_SELECT_EDGES` | 选择边 | `SelectEdges` |
+| 223 | `CAE_SELECT_VERTICES` | 选择顶点 | `SelectVertices` |
+| 224 | `CAE_SELECT_BODIES` | 选择体 | `SelectBodies` |
+
+### CAE 热载荷 (230-239)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 230 | `CAE_SET_TEMP_LOAD` | 设置温度载荷 | `SetTempLoad` |
+| 231 | `CAE_SET_HEAT_FLUX` | 设置热通量 | `SetHeatFlux` |
+| 232 | `CAE_SET_HEAT_POWER` | 设置热功率 | `SetHeatPower` |
+| 233 | `CAE_SET_INITIAL_TEMP` | 设置初始温度 | `SetInitialTemp` |
+| 234 | `CAE_SET_FIXED_TEMP` | 设置固定温度边界 | `SetFixedTemp` |
+| 239 | `CAE_SET_BONDED_CONTACT` | 设置绑定接触 | `SetBondedContact` |
+
+### CAE 接触与约束 (240-249)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 240 | `CAE_SET_CONTACT` | 热传导接触 | `SetContact` |
+| 241 | `CAE_SET_BONDED_CONTACT_LEGACY` | 绑定接触(旧) | `SetBondedContactLegacy` |
+
+> ⚠️ 注意: cmd=239 和 cmd=241 都是绑定接触，cmd=239 为 `define.h` 中的当前定义。
+
+### CAE 网格 (250-259)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 250 | `CAE_MESH_3D` | 3D网格划分 | `Mesh3D` |
+| 251 | `CAE_MESH_QUALITY` | 网格质量检查 | `MeshQuality` |
+| 252 | `CAE_MESH_FIX` | 网格修复 | `MeshFix` |
+| 253 | `CAE_MESH_MERGE_NODES` | 合并重合节点 | `MeshMergeNodes` |
+
+### CAE 求解与结果 (260-269)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 260 | `CAE_SOLVER_RUN` | 求解 | `SolverRun` |
+| 261 | `CAE_RESULT_QUERY` | 查询结果 | `QueryResults` |
+| 262 | `CAE_RESULT_TYPES` | 查询结果类型 | `QueryResultTypes` |
+| 263 | `CAE_RESULT_SUBTYPES` | 查询结果子类型 | `QueryResultSubtypes` |
+| 264 | `CAE_RESULT_EXPORT` | 结果导出 | `ResultExport` |
+
+### CAE 网格自适应 (270-279)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 270 | `CAE_MESH_ADAPTIVE` | 自适应网格 | `MeshAdaptive` |
+
+### CAE 材料与原生命令 (280-289)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 280 | `CAE_OPEN_NATIVE_HEAT_LOAD` | 打开原生热载荷面板 | `RunNativeCmd` |
+| 281 | `CAE_QUERY_ALL_FACES` | 查询所有面 | `QueryAllFaces` |
+| 282 | `CAE_QUERY_MATERIALS` | 查询材料 | `QueryMaterials` |
+| 283 | `CAE_ASSIGN_DEFAULT_MATERIAL` | 分配默认材料 | `AssignDefaultMaterial` |
+| 284 | `CAE_CREATE_MATERIAL` | 创建材料 | `CreateMaterial` |
+| 285 | `CAE_DELETE_MATERIAL` | 删除材料 | `DeleteMaterial` |
+| 286 | `CAE_SET_MATERIAL` | 设置材料 | `SetMaterial` |
+
+### CAE 热效应与时间步 (290-296)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 290 | `CAE_SET_INITIAL_THERMAL_EFFECT` | 设置初始热效应 | `SetInitialThermalEffect` |
+| 291 | `CAE_SET_TIME_STEP` | 设置时间步 | `SetTimeStep` |
+| 295 | `CAE_COPY_CONVERT_TASK` | 复制并转换任务(热→结构耦合) | `CopyAndConvertTask` |
+| 296 | `CAE_SET_THERMAL_EFFECTS` | 导入热效应(热→结构耦合) | `SetThermalEffects` |
+
+### 参数化建模自动化 (300-313)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 300 | `AUTO_QUERY_VARIABLES` | 查询变量列表 | `QueryVariables` |
+| 301 | `AUTO_SET_VARIABLES` | 批量设置变量并重建 | `SetVariablesAndRegen` |
+| 302 | `AUTO_QUERY_VARIABLE_STATUS` | 查询变量状态 | `QueryVariableStatus` |
+| 303 | `AUTO_QUERY_CAD_MATERIALS` | 查询CAD材料 | `QueryCADMaterials` |
+| 310 | `AUTO_QUERY_TARGET_OVERVIEW` | 查询可解析目标 | `QueryTargets` |
+| 311 | `AUTO_RESOLVE_TARGET` | 按规则解析目标 | `ResolveTarget` |
+| 312 | `AUTO_HIGHLIGHT_TARGET` | 高亮目标 | `HighlightTarget` |
+| 313 | `AUTO_VALIDATE_TARGET` | 校验目标规则 | `ValidateRule` |
+
+### 静力学特有 (320-338)
+
+| cmd | 枚举名 | 功能 | CaeHandle方法 |
+|-----|--------|------|--------------|
+| 320 | `STATIC_CREATE_SIM` | 创建静力学仿真 | `StaticCreateSim` |
+| 321 | `STATIC_SELECT_PART` | 选择部件 | `StaticSelectPart` |
+| 322 | `STATIC_MESH_3D` | 静力学网格 | `StaticMesh3D` |
+| 323 | `STATIC_CREATE_FORCE` | 创建力载荷 | `StaticCreateForce` |
+| 324 | `STATIC_CREATE_FIXED` | 创建固定约束 | `StaticCreateFixed` |
+| 325 | `STATIC_GET_PARAM` | 获取参数 | `StaticGetParam` |
+| 326 | `STATIC_SET_PARAM` | 设置参数 | `StaticSetParam` |
+| 327 | `STATIC_GET_ENTITY` | 获取实体 | `StaticGetEntity` |
+| 328 | `STATIC_SELECT_FORCE_ENTITY` | 选择力实体 | `StaticSelectForceEntity` |
+| 329 | `STATIC_CREATE_MATERIAL` | 创建材料 | `StaticCreateMaterial` |
+| 330 | `STATIC_DELETE_MATERIAL` | 删除材料 | `StaticDeleteMaterial` |
+| 331 | `STATIC_SET_MATERIAL` | 设置材料 | `StaticSetMaterial` |
+| 332 | `STATIC_START_SIMULATE` | 开始仿真 | `StaticStartSimulate` |
+| 333 | `STATIC_VERIFY_SETUP` | 验证设置 | `StaticVerifySetup` |
+| 334 | `STATIC_CREATE_BONDED` | 创建绑定接触 | `StaticCreateBonded` |
+| 335 | `STATIC_SELECT_MASTER` | 选择主面 | `StaticSelectMaster` |
+| 336 | `STATIC_SELECT_SLAVE` | 选择从面 | `StaticSelectSlave` |
+| 337 | `STATIC_DELETE_BONDED` | 删除绑定接触 | `StaticDeleteBonded` |
+| 338 | `STATIC_INQ_BONDED` | 查询绑定接触 | `StaticInqBonded` |
+
+### 📐 设计草案 — 参数优化 (400-406)
+
+> ⚠️ 以下命令尚未在 `define.h` 中注册，仅作为设计参考。
+
+| cmd | 功能 | CaeHandle方法 |
+|-----|------|--------------|
+| 400 | 定义设计变量 | `OptDefineVariable` |
+| 401 | 定义优化目标 | `OptDefineObjective` |
+| 402 | 定义约束条件 | `OptDefineConstraint` |
+| 403 | 设置优化算法 | `OptSetAlgorithm` |
+| 404 | 执行优化 | `OptRun` |
+| 405 | 查询优化结果 | `OptQueryResult` |
+| 406 | 查询优化历史 | `OptQueryHistory` |
+
+### 📐 设计草案 — 结果处理 (500-506)
+
+> ⚠️ 以下命令尚未在 `define.h` 中注册，仅作为设计参考。
+
+| cmd | 功能 | CaeHandle方法 |
+|-----|------|--------------|
+| 500 | 云图PNG导出 | `ExportContourPNG` |
+| 501 | CSV数据导出 | `ExportResultCSV` |
+| 502 | 曲线导出 | `ExportResultCurve` |
+| 503 | 报告生成 | `GenerateReport` |
+| 504 | 结果查询 | `QueryResultData` |
+| 505 | 动画导出 | `ExportAnimation` |
+| 506 | 多工况查询 | `QueryMultiCase` |
 
 ---
 
@@ -310,3 +428,7 @@ std::string utf8Str = LocalAcpToUtf8(acpStr);
 | 代码架构 | [[知识库/02_CAE开发/代码架构\|代码架构.md]] |
 | 技术路线详解 | [[知识库/02_CAE开发/Z3ParametricModeling_技术路线详解\|技术路线详解.md]] |
 | 工程经验 | [[知识库/02_CAE开发/工程经验_结构化\|工程经验_结构化.md]] |
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*

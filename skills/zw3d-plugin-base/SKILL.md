@@ -3,7 +3,7 @@ name: zw3d-plugin-base
 description: Use when developing ZW3D 2026 C++ DLL plugins, including plugin skeletons, cvx/Zw API usage, command registration, form UI, memory management, encoding conversion, deployment to apilibs, or debugging ZW3D plugin loading.
 ---
 
-# ZW3D 插件基础 Skill — v1.2.0
+# ZW3D 插件基础 Skill — v1.3.0
 
 > **触发词**: "创建ZW3D插件", "zw3d dll", "cvx API", "命令注册", "表单UI", "内存管理", "插件骨架", "zw3d plugin", "VxApi"
 > **适用**: ZW3D 2026 C++ DLL插件基础开发

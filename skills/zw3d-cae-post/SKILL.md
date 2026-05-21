@@ -3,7 +3,7 @@ name: zw3d-cae-post
 description: Use when implementing or debugging ZW3D 2026 CAE post-processing workflows, including result type queries, contour/cloud plots, CSV export, report generation, animations, thermal or structural result extraction, and bridge result-query commands.
 ---
 
-# ZW3D 后处理 Skill — v1.2.0
+# ZW3D 后处理 Skill — v1.3.0
 
 > **触发词**: "后处理", "结果导出", "云图", "CSV", "报告", "动画", "post processing", "result export", "contour", "结果查询"
 > **适用**: ZW3D 2026 ZWMeshWorks 结果查询、云图导出、报告生成
@@ -72,7 +72,9 @@ int err = czwsResultReport(taskId, outputPath, format);
 
 ---
 
-## 三、云图PNG导出 (cmd=500)
+## 三、云图PNG导出 (cmd=500) 📐 设计草案
+
+> ⚠️ cmd=500 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -105,7 +107,9 @@ int err = czwsResultReport(taskId, outputPath, format);
 
 ---
 
-## 四、CSV数据导出 (cmd=501)
+## 四、CSV数据导出 (cmd=501) 📐 设计草案
+
+> ⚠️ cmd=501 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -132,7 +136,9 @@ NodeID,X,Y,Z,Total
 
 ---
 
-## 五、曲线数据导出 (cmd=502)
+## 五、曲线数据导出 (cmd=502) 📐 设计草案
+
+> ⚠️ cmd=502 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 曲线类型
 | 编码 | 类型 | 说明 |
@@ -166,7 +172,9 @@ Step,Time,Value
 
 ---
 
-## 六、仿真报告生成 (cmd=503)
+## 六、仿真报告生成 (cmd=503) 📐 设计草案
+
+> ⚠️ cmd=503 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -200,7 +208,9 @@ Step,Time,Value
 
 ---
 
-## 七、结果数据查询 (cmd=504)
+## 七、结果数据查询 (cmd=504) 📐 设计草案
+
+> ⚠️ cmd=504 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -232,7 +242,9 @@ Step,Time,Value
 
 ---
 
-## 八、动画导出 (cmd=505)
+## 八、动画导出 (cmd=505) 📐 设计草案
+
+> ⚠️ cmd=505 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -253,7 +265,9 @@ Step,Time,Value
 
 ---
 
-## 九、多工况查询 (cmd=506)
+## 九、多工况查询 (cmd=506) 📐 设计草案
+
+> ⚠️ cmd=506 未在 `Common/define.h` 中注册。以下为设计参考，待实现后验证。
 
 ### 请求
 ```json
@@ -290,15 +304,21 @@ Step,Time,Value
 
 ## 十、IPC命令号段 (完整表见 [[zw3d-ipc-comm#七完整命令码表\|ipc-comm §七]])
 
-| cmd | 名称 | 说明 |
-|-----|------|------|
-| 500 | 云图PNG导出 | 结果云图截图 |
-| 501 | CSV数据导出 | 节点/单元数据 |
-| 502 | 曲线导出 | 历史曲线数据 |
-| 503 | 报告生成 | HTML仿真报告 |
-| 504 | 结果查询 | 精确位置查询 |
-| 505 | 动画导出 | GIF/视频 |
-| 506 | 多工况查询 | 载荷工况矩阵 |
+> ⚠️ 以下命令均为 📐 设计草案，未在 `Common/define.h` 中注册，仅作为设计参考。
+
+| cmd | 名称 | 说明 | 状态 |
+|-----|------|------|------|
+| 261 | 结果查询 | 已实现 (`QueryResults`) | ✅ 已实现 |
+| 262 | 结果类型查询 | 已实现 (`QueryResultTypes`) | ✅ 已实现 |
+| 263 | 结果子类型查询 | 已实现 (`QueryResultSubtypes`) | ✅ 已实现 |
+| 264 | 结果导出 | 已注册待实现 (`ResultExport`) | 📐 设计草案 |
+| 500 | 云图PNG导出 | 结果云图截图 | 📐 设计草案 |
+| 501 | CSV数据导出 | 节点/单元数据 | 📐 设计草案 |
+| 502 | 曲线导出 | 历史曲线数据 | 📐 设计草案 |
+| 503 | 报告生成 | HTML仿真报告 | 📐 设计草案 |
+| 504 | 结果查询 | 精确位置查询 | 📐 设计草案 |
+| 505 | 动画导出 | GIF/视频 | 📐 设计草案 |
+| 506 | 多工况查询 | 载荷工况矩阵 | 📐 设计草案 |
 
 ---
 
@@ -330,3 +350,7 @@ czwsResultTypeInqData(taskId, "Temperature", timeStepIndex, &count, &pResults);
 | 后处理模板 | `sample_templates/ResultExportAPI_template.cpp` |
 | CAE功能清单 | [[知识库/02_CAE开发/ZWMeshWorks_CAE_插件_功能清单\|功能清单.md]] |
 | 稳态热开发计划 | [[知识库/02_CAE开发/稳态传热模块开发计划\|稳态传热模块开发计划.md]] |
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*

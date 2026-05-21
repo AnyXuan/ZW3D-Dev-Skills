@@ -3,7 +3,7 @@ name: zw3d-cae-thermal
 description: Use when implementing or debugging ZW3D 2026 steady thermal or transient thermal CAE workflows, including thermal tasks, temperature loads, heat flux, heat power, initial thermal conditions, thermal materials, mesh requirements, solve flow, and thermal result queries.
 ---
 
-# ZW3D 热分析 Skill — v1.2.0
+# ZW3D 热分析 Skill — v1.3.0
 
 > **触发词**: "稳态热", "瞬态热", "温度载荷", "热通量", "热仿真", "thermal", "heat flux", "热传导", "热功率", "对流", "辐射"
 > **适用**: ZW3D 2026 ZWMeshWorks 稳态/瞬态热仿真
@@ -58,47 +58,52 @@ if (err != ZWSIM_API_NO_ERROR) {
 
 ### 3.1 温度载荷 (cmd=230)
 ```cpp
-szwsTempLoadData param;
-czwsSimStTempLoadDataInit(&param);
-param.temperature = 80.0;  // °C
-param.iStep = 1;
-param.entNum = 1;
-param.entities = &entityId;  // 面实体
+szwsTempLoadData loadData;
+czwsSimStTemperatureLoadDataInit(&loadData);
+loadData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
+loadData.iEntNum = 1;
+loadData.sEntities = &entityId;  // 面实体
+loadData.sPoints.data = nullptr;
+loadData.iNodeIds = nullptr;
+loadData.dValue = 80.0;          // °C
+strncpy_s(loadData.unitValue, sizeof(loadData.unitValue), "Celsius", _TRUNCATE);
 
 zwsDbId loadIdx;
-int err = czwsSimStCreateTempLoad(&param, &loadIdx);
-czwsSimStTempLoadDataFree(&param);
+ZWSimEvxErrors err = czwsSimStCreateTemperatureLoad(&loadData, &loadIdx);
+czwsSimStFreeTemperatureLoadData(&loadData);
 if (err != ZWSIM_API_NO_ERROR) {
-    cvxMsgDisp("Failed to create temp load");
+    cvxMsgDisp("Failed to create temperature load");
     return;
 }
 ```
 
 ### 3.2 热通量载荷 (cmd=231)
 ```cpp
-szwsHtFluxData param;
-czwsSimStHeatFluxDataInit(&param);
-param.flux = 1000.0;  // W/m²
-param.entNum = 1;
-param.entities = &entityId;
+szwsHtFluxData loadData;
+czwsSimStHeatFluxLoadDataInit(&loadData);
+loadData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
+loadData.iEntNum = 1;
+loadData.sEntities = &entityId;
+loadData.dValue = 1000.0;  // W/m²
 
 zwsDbId loadIdx;
-int err = czwsSimStCreateHeatFlux(&param, &loadIdx);
-czwsSimStHeatFluxDataFree(&param);
+ZWSimEvxErrors err = czwsSimStCreateHeatFluxLoad(&loadData, &loadIdx);
+czwsSimStFreeHeatFluxLoadData(&loadData);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
 ### 3.3 热功率载荷 (cmd=232)
 ```cpp
-szwsHtPowerData param;
-czwsSimStHeatPowerDataInit(&param);
-param.power = 50.0;  // W
-param.entNum = 1;
-param.entities = &entityId;  // 体实体
+szwsHtPowerData loadData;
+czwsSimStHeatPowerLoadDataInit(&loadData);
+loadData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
+loadData.iEntNum = 1;
+loadData.sEntities = &entityId;  // 体实体
+loadData.dValue = 50.0;          // W
 
 zwsDbId loadIdx;
-int err = czwsSimStCreateHeatPower(&param, &loadIdx);
-czwsSimStHeatPowerDataFree(&param);
+ZWSimEvxErrors err = czwsSimStCreateHeatPowerLoad(&loadData, &loadIdx);
+czwsSimStFreeHeatPowerLoadData(&loadData);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
@@ -119,7 +124,7 @@ czwsSimStContactDataFree(&param);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
-### 3.5 绑定接触 (cmd=241)
+### 3.5 绑定接触 (cmd=239)
 ```cpp
 szwsBondedContactData param;
 czwsSimStBondedContactDataInit(&param);
@@ -129,22 +134,24 @@ param.slaveEntNum = 1;
 param.sSlaveEntities = &slaveId;
 
 zwsDbId contactIdx;
-int err = czwsSimStCreateBondedContact(&param, &contactIdx);
-czwsSimStBondedContactDataFree(&param);
+ZWSimEvxErrors err = czwsSimStCreateBondedContact(&param, &contactIdx);
+// 无对应 Free API，无需手动释放
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
 ### 3.6 初始温度 (cmd=233)
 ```cpp
-szwsInitTempData param;
-czwsSimStInitTempDataInit(&param);
-param.temperature = 25.0;
-param.entNum = 1;
-param.entities = &entityId;
+szwsInitTempData loadData;
+czwsSimStInitialTemperatureDataInit(&loadData);
+loadData.eEntityType = ZW_ST_ENTITY_TYPE_GEOMETRY;
+loadData.iEntNum = 1;
+loadData.sEntities = &entityId;
+loadData.dValue = 25.0;
+strncpy_s(loadData.unitValue, sizeof(loadData.unitValue), "Celsius", _TRUNCATE);
 
 zwsDbId idxInitTemp;
-int err = czwsSimStCreateInitialTemp(&param, &idxInitTemp);
-czwsSimStFreeInitTempData(&param);
+ZWSimEvxErrors err = czwsSimStCreateInitialTemperature(&loadData, &idxInitTemp);
+czwsSimStFreeInitialTemperatureData(&loadData);
 if (err != ZWSIM_API_NO_ERROR) { /* 处理错误 */ }
 ```
 
@@ -209,7 +216,7 @@ Step 12 查询结果        czwsResultTypeInqData
 | 热功率 | 232 | `SetHeatPower` |
 | 初始温度 | 233 | `SetInitialTemp` |
 | 热传导接触 | 240 | `SetContact` |
-| 绑定接触 | 241 | `SetBondedContact` |
+| 绑定接触 | 239 | `SetBondedContact` |
 | 网格划分 | 250 | `Mesh3D` |
 | 求解 | 260 | `SolverRun` |
 | 查询结果 | 261 | `QueryResults` |
@@ -256,6 +263,102 @@ for (int i = 0; i < count; i++) {
 }
 
 cvxMemFree((void**)&pResults);
+```
+
+---
+
+## 七B、热-结构耦合工作流 (cmd=295/296)
+
+> 源码: `Zw3dPMBridge/CaeTaskOps.cpp` → `CopyAndConvertTask` + `SetThermalEffects`
+> 模式来源: chihaya demo.txt → `CalculateStaticTask` / `SetThermalEffectsLoad`
+
+### 7B.1 概述
+
+热-结构耦合分析将热仿真结果作为结构仿真的温度载荷输入:
+1. 先完成热分析 (稳态热/瞬态热)
+2. 复制热任务并转换为结构任务 (cmd=295)
+3. 导入热效应到结构任务 (cmd=296)
+
+### 7B.2 复制并转换任务 (cmd=295)
+
+```cpp
+// 模式: czwsPartDuplicateTask → czwsRegenTree → czwsPartSetActiveTask → czwsSimStSwitchTask → czwsRegenTree
+zwsDbId srcTask = /* 热任务ID */;
+zwsDbId newTask = {};
+
+// Step 1: 复制任务
+czwsPartDuplicateTask(srcTask, &newTask);
+czwsRegenTree();
+
+// Step 2: 激活新任务
+czwsPartSetActiveTask(newTask);
+
+// Step 3: 切换分析类型 (0=Static, 5=Static in demo)
+czwsSimStSwitchTask(static_cast<ezwsAnsysType>(0));
+czwsRegenTree();
+```
+
+JSON 请求:
+```json
+{
+  "cmd": 295,
+  "data": {
+    "sourceTaskId": 12345,
+    "ansysType": 0
+  }
+}
+```
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `sourceTaskId` | uintptr_t | 0 (使用当前激活任务) | 热任务ID |
+| `ansysType` | int | 0 | 0=Static, 1=Nonlinear Static, 6=Frequency |
+
+### 7B.3 导入热效应 (cmd=296)
+
+```cpp
+// 模式: czwsSimStThermalEffectsInit → 设置字段 → czwsSimStCreateThermalEffects → czwsSimStFreeThermalEffectsData
+szwsThermalEffectData payload;
+czwsSimStThermalEffectsInit(&payload);
+payload.sTaskHandle = thermalTask;  // 热任务句柄
+payload.itempStep = -1;             // -1=最后一步
+payload.bMatchTimeStep = false;
+
+zwsDbId resultId = {};
+ZWSimEvxErrors err = czwsSimStCreateThermalEffects(&payload, &resultId);
+czwsSimStFreeThermalEffectsData(&payload);
+czwsRegenTree();
+```
+
+JSON 请求:
+```json
+{
+  "cmd": 296,
+  "data": {
+    "thermalTaskId": 12345,
+    "tempStep": -1,
+    "matchTimeStep": false
+  }
+}
+```
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `thermalTaskId` | uintptr_t | **必需** | 源热任务ID |
+| `tempStep` | int | -1 | -1=最后一步, 0+=指定步 |
+| `matchTimeStep` | bool | false | 是否匹配时间步 |
+
+### 7B.4 完整耦合流程
+
+```
+Step 1  创建热任务        cmd=200 (type=steady_thermal)
+Step 2  设置材料+载荷+网格   cmd=230/231/232 + cmd=250
+Step 3  求解热分析        cmd=260
+Step 4  复制并转换为结构    cmd=295 (ansysType=0)
+Step 5  导入热效应        cmd=296 (thermalTaskId=热任务ID)
+Step 6  设置结构载荷/约束   cmd=220 + 结构特有操作
+Step 7  网格+求解结构      cmd=250 + cmd=260
+Step 8  查询结构结果       cmd=261
 ```
 
 ---

@@ -3,7 +3,7 @@ name: zw3d-cae-optimization
 description: Use when implementing or debugging ZW3D 2026 CAE parameter optimization workflows, including design variables, optimization objectives, constraints, sensitivity, MMFD, SLP, SQP, and optimization flows connected to thermal or structural simulation.
 ---
 
-# ZW3D 参数优化 Skill — v1.2.0
+# ZW3D 参数优化 Skill — v1.3.0
 
 > **触发词**: "参数优化", "optimization", "MMFD", "SLP", "SQP", "设计变量", "优化目标", "约束条件", "灵敏度"
 > **适用**: ZW3D 2026 ZWMeshWorks 参数优化模块
@@ -140,15 +140,21 @@ objectives[1] = {MINIMIZE, "Mass", "Total", ...};    // 最小化质量
 
 ## 六、IPC命令号段 (完整表见 [[zw3d-ipc-comm#七完整命令码表\|ipc-comm §七]])
 
-| cmd | 名称 | 说明 |
-|-----|------|------|
-| 400 | OPT_DEFINE_VARIABLE | 定义设计变量 |
-| 401 | OPT_DEFINE_OBJECTIVE | 定义优化目标 |
-| 402 | OPT_DEFINE_CONSTRAINT | 定义约束条件 |
-| 403 | OPT_SET_ALGORITHM | 设置优化算法和参数 |
-| 404 | OPT_RUN | 执行优化 |
-| 405 | OPT_QUERY_RESULT | 查询优化结果 |
-| 406 | OPT_QUERY_HISTORY | 查询优化历史 |
+> ⚠️ 以下命令均为 📐 设计草案，未在 `Common/define.h` 中注册，仅作为设计参考。
+
+| cmd | 名称 | 说明 | 状态 |
+|-----|------|------|------|
+| 300 | AUTO_QUERY_VARIABLES | 查询变量列表 | ✅ 已实现 |
+| 301 | AUTO_SET_VARIABLES | 批量设置变量并重建 | ✅ 已实现 |
+| 310 | AUTO_QUERY_TARGET_OVERVIEW | 查询可解析目标 | ✅ 已实现 |
+| 311 | AUTO_RESOLVE_TARGET | 按规则解析目标 | ✅ 已实现 |
+| 400 | OPT_DEFINE_VARIABLE | 定义设计变量 | 📐 设计草案 |
+| 401 | OPT_DEFINE_OBJECTIVE | 定义优化目标 | 📐 设计草案 |
+| 402 | OPT_DEFINE_CONSTRAINT | 定义约束条件 | 📐 设计草案 |
+| 403 | OPT_SET_ALGORITHM | 设置优化算法和参数 | 📐 设计草案 |
+| 404 | OPT_RUN | 执行优化 | 📐 设计草案 |
+| 405 | OPT_QUERY_RESULT | 查询优化结果 | 📐 设计草案 |
+| 406 | OPT_QUERY_HISTORY | 查询优化历史 | 📐 设计草案 |
 
 ---
 
@@ -268,3 +274,7 @@ objectives[1] = {MINIMIZE, "Mass", "Total", ...};    // 最小化质量
 | 优化模板 | `sample_templates/ParameterOptimizationAPI_template.cpp` |
 | CAE功能清单 | [[知识库/02_CAE开发/ZWMeshWorks_CAE_插件_功能清单\|功能清单.md]] |
 | CAE接口设计 | [[知识库/02_CAE开发/CAE自动化接口设计_一期\|接口设计_一期.md]] |
+
+---
+
+*文档版本: v1.3.0 | 维护者: 韩天尊*
